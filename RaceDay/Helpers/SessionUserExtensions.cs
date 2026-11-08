@@ -18,7 +18,7 @@ public static class SessionUserExtensions
     public static string? GetToken(this ISession session) => session.GetString(SessionKeys.Jwt);
     public static string? GetRole(this ISession session) => session.GetString(SessionKeys.Role);
     public static string? GetUserEmail(this ISession session) => session.GetString(SessionKeys.UserEmail);
-
+ 
     // Logged in = we are holding a token.
     public static bool IsLoggedIn(this ISession session) => !string.IsNullOrEmpty(session.GetToken());
 
