@@ -20,7 +20,7 @@ public class EventsController : Controller
     public async Task<IActionResult> Index()
     {
         var result = await _eventService.GetMyEventsAsync();
-        if (!result.Success)
+        if (!result.Success) 
         {
             TempData["ErrorMessage"] = result.ErrorMessage;
             return View(new List<EventViewModel>());
