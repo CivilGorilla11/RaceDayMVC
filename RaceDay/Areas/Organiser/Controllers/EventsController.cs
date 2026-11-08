@@ -13,7 +13,7 @@ public class EventsController : Controller
 
     public EventsController(IEventApiService eventService)
     {
-        _eventService = eventService;
+        _eventService = eventService; 
     }
 
     // GET /Organiser/Events  -> list of MY events
