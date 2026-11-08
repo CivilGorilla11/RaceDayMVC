@@ -6,7 +6,7 @@ public static class SessionKeys
     public const string Jwt = "JWT";
     public const string Role = "Role";
     public const string UserEmail = "UserEmail";
-}
+} 
 
 // The exact role strings your API puts in its login response.
 public static class Roles
