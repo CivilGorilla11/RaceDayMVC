@@ -18,6 +18,7 @@ else
         <table class="table align-middle">
             <thead>
                 <tr>
+                    <th style="width:90px;"></th>
                     <th>Name</th>
                     <th>Date</th>
                     <th>Location</th>
@@ -28,6 +29,12 @@ else
                 @foreach (var e in Model)
                 {
                     <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(e.BannerUrl))
+                            {
+                                <img src="@e.BannerUrl" alt="" class="rounded" style="width:80px;height:48px;object-fit:cover;" />
+                            }
+                        </td>
                         <td>@e.EventName</td>
                         <td>@e.EventDate.ToString("dd MMM yyyy")</td>
                         <td>@e.Address</td>

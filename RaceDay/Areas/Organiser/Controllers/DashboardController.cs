@@ -4,7 +4,7 @@ using RaceDay.Models;
 using RaceDay.Services.Interfaces;
 using RaceDay.Filters;
 
-namespace RaceDay.Web.Areas.Organiser.Controllers;
+namespace RaceDay.Web.Areas.Organiser.Controllers; 
 
 [Area("Organiser")]            // tells MVC this controller lives in the Organiser area (URL: /Organiser/Dashboard)
 [RoleRequired("Organiser")]    // your filter: blocks anyone who is not logged in as an Organiser

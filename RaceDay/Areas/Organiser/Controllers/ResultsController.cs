@@ -56,7 +56,7 @@ namespace RaceDay.Areas.Organiser.Controllers
             {
                 EventId = eventId,
                 EnrolmentId = enrolmentId,
-                Race = await GetEventNameAsync(eventId)   // sensible default; the organiser can change it
+                Race = await GetEventNameAsync(eventId)   // sensible default; the organiser can change it 
             };
             return View(form);
         }

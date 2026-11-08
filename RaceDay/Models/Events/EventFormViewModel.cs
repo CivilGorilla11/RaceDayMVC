@@ -27,8 +27,10 @@ namespace RaceDay.Models.Events
         [StringLength(500, ErrorMessage = "Description can be at most 500 characters.")] // matches SQL VARCHAR(500)
         public string? Description { get; set; } // optional, so no [Required]
 
-        // ADD LATER for the banner upload (Part 3, Azure Blob):
-        // public IFormFile? BannerImage { get; set; }
+         // ADD LATER for the banner upload (Part 3, Azure Blob):
+         public IFormFile? BannerImage { get; set; }
+
+        public string? BannerUrl { get; set; } // optional, so no [Required]
 
     }
 }

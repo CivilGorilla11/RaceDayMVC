@@ -44,7 +44,14 @@ else
         {
             <div class="col">
                 <div class="card h-100">
-                    @* LATER: show the event banner here once the API returns a banner image URL *@
+                    @if (!string.IsNullOrEmpty(e.BannerUrl))
+                    {
+                        <img src="@e.BannerUrl" class="card-img-top" alt="Banner for @e.EventName" style="height:160px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height:160px;">No banner</div>
+                    }
                     <div class="card-body">
                         <h2 class="h5 card-title">@e.EventName</h2>
                         <p class="mb-1"><strong>@e.EventDate.ToString("dd MMM yyyy")</strong></p>

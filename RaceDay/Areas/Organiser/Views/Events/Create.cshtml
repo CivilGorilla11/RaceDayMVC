@@ -5,10 +5,10 @@
 
 <h1 class="mb-3">Create event</h1>
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" enctype="multipart/form-data">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <partial name="_EventFormFields" />
+    <partial name="_EventFormViewModel" />
 
     <button type="submit" class="btn btn-primary">Save event</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>

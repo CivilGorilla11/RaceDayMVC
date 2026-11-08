@@ -12,7 +12,7 @@ public class EnrolmentsController : Controller
     private readonly IEnrolmentApiService _enrolmentService;
     private readonly IEventApiService _eventService;
 
-    public EnrolmentsController(IEnrolmentApiService enrolmentService, IEventApiService eventService)
+    public EnrolmentsController(IEnrolmentApiService enrolmentService, IEventApiService eventService) 
     {
         _enrolmentService = enrolmentService;
         _eventService = eventService;

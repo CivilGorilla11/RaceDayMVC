@@ -48,6 +48,17 @@ public class EventsController : Controller
             ModelState.AddModelError(string.Empty, result.ErrorMessage); // shown in the validation summary
             return View(model);                                          // keeps what the user typed
         }
+        if (model.BannerImage is { Length: > 0 })
+        {
+            var banner = await _eventService.UploadBannerAsync(result.Data!.EventId, model.BannerImage);
+            if (!banner.Success)
+            {
+                TempData["ErrorMessage"] = $"The event was created, but the banner was not uploaded: {banner.ErrorMessage}";
+                return RedirectToAction(nameof(Edit), new { id = result.Data!.EventId });   // lets the organiser retry
+            }
+        }
+
+       
 
         TempData["SuccessMessage"] = "Event created successfully.";
         return RedirectToAction(nameof(Index)); // Post-Redirect-Get: refreshing will not resubmit the form
@@ -90,6 +101,17 @@ public class EventsController : Controller
             ModelState.AddModelError(string.Empty, result.ErrorMessage);
             return View(model);
         }
+        if (model.BannerImage is { Length: > 0 })
+        {
+            var banner = await _eventService.UploadBannerAsync(result.Data!.EventId, model.BannerImage);
+            if (!banner.Success)
+            {
+                TempData["ErrorMessage"] = $"The event was created, but the banner was not uploaded: {banner.ErrorMessage}";
+                return RedirectToAction(nameof(Edit), new { id = result.Data!.EventId });   // lets the organiser retry
+            }
+        }
+
+       
 
         TempData["SuccessMessage"] = "Event updated successfully.";
         return RedirectToAction(nameof(Index));

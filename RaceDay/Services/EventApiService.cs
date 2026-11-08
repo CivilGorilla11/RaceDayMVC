@@ -2,6 +2,9 @@
 using RaceDay.Models;
 using RaceDay.Models.Events;
 using RaceDay.Services.Interfaces;
+using System.Net;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
 
 namespace RaceDay.Services;
 
@@ -103,11 +106,20 @@ public class EventApiService : IEventApiService
         try
         {
             // Send ONLY the fields the API expects (an anonymous object). OrganiserID comes from the token.
-            var body = new { model.EventName, model.EventDate, model.Address, model.Description };
+            var body = new
+            {
+                model.EventName,
+                EventDate = model.EventDate.ToString("yyyy-MM-dd"),
+                EventAddress = model.Address,
+                model.Description
+            };
 
             var response = await _http.PostAsJsonAsync("api/Event", body);
             if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"CREATE EVENT {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
                 return ApiResult<EventViewModel>.Fail(ApiErrorMessages.For(response.StatusCode), (int)response.StatusCode);
+            }
 
             var created = await response.Content.ReadFromJsonAsync<EventViewModel>();
             if (created == null)
@@ -160,6 +172,43 @@ public class EventApiService : IEventApiService
         catch (HttpRequestException)
         {
             return ApiResult<bool>.Fail(ApiErrorMessages.Unreachable, 503);
+        }
+    }
+        // POST /api/Event/{eventId}/banner   (multipart/form-data, the field must be called "file")
+    public async Task<ApiResult<EventViewModel>> UploadBannerAsync(int eventId, IFormFile file)
+    {
+        try
+        {
+            // A multipart body is how browsers and APIs send files: the bytes plus a name and a type.
+            using var content = new MultipartFormDataContent();
+            await using var stream = file.OpenReadStream();
+
+            var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            content.Add(fileContent, "file", file.FileName);   // "file" must match the API action's parameter name
+
+            var response = await _http.PostAsync($"api/Event/{eventId}/banner", content);
+
+            // The API explains a 400 in plain text (wrong type, over 5 MB...), so show that text.
+            if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                var reason = (await response.Content.ReadAsStringAsync()).Trim().Trim('"');
+                return ApiResult<EventViewModel>.Fail(
+                    string.IsNullOrWhiteSpace(reason) ? "The image was not accepted." : reason, 400);
+            }
+
+            if (!response.IsSuccessStatusCode)
+                return ApiResult<EventViewModel>.Fail(ApiErrorMessages.For(response.StatusCode), (int)response.StatusCode);
+
+            var updated = await response.Content.ReadFromJsonAsync<EventViewModel>();
+            if (updated == null)
+                return ApiResult<EventViewModel>.Fail("The API returned an empty response.", 500);
+
+            return ApiResult<EventViewModel>.Ok(updated, (int)response.StatusCode);
+        }
+        catch (HttpRequestException)
+        {
+            return ApiResult<EventViewModel>.Fail(ApiErrorMessages.Unreachable, 503);
         }
     }
 }

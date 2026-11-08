@@ -12,6 +12,8 @@ namespace RaceDay.Services.Interfaces
         Task<ApiResult<List<EventViewModel>>> GetMyEventsAsync();                                  // GET /api/events/organiser/me
         Task<ApiResult<EventViewModel>> CreateEventAsync(EventFormViewModel model);                // POST /api/events
         Task<ApiResult<EventViewModel>> UpdateEventAsync(int eventId, EventFormViewModel model);   // PUT /api/events/{id}
-        Task<ApiResult<bool>> DeleteEventAsync(int eventId);                                       // DELETE /api/events/{id}
+        Task<ApiResult<bool>> DeleteEventAsync(int eventId);   // DELETE /api/events/{id}
+
+        Task<ApiResult<EventViewModel>> UploadBannerAsync(int eventId, IFormFile file);   // POST /api/events/{id}/banner
     }
 }

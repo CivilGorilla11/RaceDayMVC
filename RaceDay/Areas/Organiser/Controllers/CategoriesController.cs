@@ -15,7 +15,7 @@ public class CategoriesController : Controller
     private readonly IEventApiService _eventService;
 
     public CategoriesController(ICategoryApiService categoryService, IEventApiService eventService)
-    {
+    { 
         _categoryService = categoryService;
         _eventService = eventService;
     }
