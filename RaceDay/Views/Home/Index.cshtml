@@ -1,0 +1,64 @@
+﻿@model List<EventViewModel>
+@{
+    ViewData["Title"] = "Upcoming events";
+
+    // The controller sends the current filter values back so the boxes stay filled in after searching.
+    var filter = ViewBag.Filter as EventFilterViewModel ?? new EventFilterViewModel();
+    bool showPast = ViewBag.ShowPast is bool b && b;
+}
+
+<h1 class="mb-3">Upcoming events</h1>
+
+@* A GET form puts the filters in the address bar (?Search=...&Location=...), so a filtered list can be bookmarked. *@
+<form method="get" asp-area="" asp-controller="Home" asp-action="Index" class="row g-2 align-items-end mb-4">
+    <div class="col-md-4">
+        <label class="form-label" for="Search">Search</label>
+        <input type="text" id="Search" name="Search" value="@filter.Search" class="form-control" placeholder="Event name or keyword" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label" for="Location">Location</label>
+        <input type="text" id="Location" name="Location" value="@filter.Location" class="form-control" placeholder="e.g. Johannesburg" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label" for="Date">On or after</label>
+        <input type="date" id="Date" name="Date" value="@filter.Date?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-3 d-flex align-items-center gap-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="showPast" name="showPast" value="true" @(showPast ? "checked" : "") />
+            <label class="form-check-label" for="showPast">Show past events</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <p>No events match your search.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+        @foreach (var e in Model)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    @* LATER: show the event banner here once the API returns a banner image URL *@
+                    <div class="card-body">
+                        <h2 class="h5 card-title">@e.EventName</h2>
+                        <p class="mb-1"><strong>@e.EventDate.ToString("dd MMM yyyy")</strong></p>
+                        <p class="text-muted mb-2">@e.Address</p>
+                        @if (!string.IsNullOrWhiteSpace(e.Description))
+                        {
+                            <p class="card-text">@(e.Description.Length > 100 ? e.Description.Substring(0, 100) + "..." : e.Description)</p>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a asp-area="" asp-controller="Events" asp-action="Details" asp-route-id="@e.EventId" class="btn btn-primary w-100">View details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

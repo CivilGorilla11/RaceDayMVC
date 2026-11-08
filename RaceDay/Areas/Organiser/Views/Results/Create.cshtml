@@ -1,0 +1,20 @@
+﻿@model ResultFormViewModel
+@{
+    ViewData["Title"] = "Capture result";
+}
+
+<h1 class="mb-3">Capture result</h1>
+<p class="text-muted">Enrolment #@Model.EnrolmentId</p>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <partial name="_ResultFormFields" />
+
+    <button type="submit" class="btn btn-primary">Save result</button>
+    <a asp-action="Index" asp-route-eventId="@Model.EventId" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

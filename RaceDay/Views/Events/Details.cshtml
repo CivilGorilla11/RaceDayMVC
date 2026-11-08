@@ -1,0 +1,67 @@
+﻿@model EventDetailsViewModel
+@{
+    ViewData["Title"] = Model.Event.EventName;
+    var session = Context.Session;   // used to decide which button each visitor sees
+}
+
+<a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-sm btn-outline-secondary mb-3">Back to events</a>
+
+@* LATER: show the event banner image here once the API provides its URL *@
+
+<h1 class="mb-1">@Model.Event.EventName</h1>
+<p class="lead mb-1">@Model.Event.EventDate.ToString("dddd, dd MMMM yyyy")</p>
+<p class="text-muted">@Model.Event.Address</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.Event.Description))
+{
+    <p>@Model.Event.Description</p>
+}
+
+<h2 class="h4 mt-4">Categories</h2>
+
+@if (!Model.Categories.Any())
+{
+    <p>No categories have been added to this event yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th class="text-end">Distance</th>
+                    <th class="text-end">Entry fee</th>
+                    <th class="text-end">Places</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Categories)
+                {
+                    <tr>
+                        <td>@c.CategoryName</td>
+                        <td class="text-end">@c.Distance.ToString("0.##") km</td>
+                        <td class="text-end">R @c.EntryFee.ToString("N2")</td>
+                        <td class="text-end">@c.MaxParticipants</td>
+                        <td class="text-end">
+                            @if (session.IsParticipant())
+                            {
+                                @* One small form per category: it posts the category id and the event id *@
+                                <form asp-area="" asp-controller="Enrolments" asp-action="Create" method="post" class="d-inline">
+                                    <input type="hidden" name="categoryId" value="@c.CategoryId" />
+                                    <input type="hidden" name="eventId" value="@Model.Event.EventId" />
+                                    <button type="submit" class="btn btn-sm btn-primary">Enrol</button>
+                                </form>
+                            }
+                            else if (!session.IsLoggedIn())
+                            {
+                                <a asp-area="" asp-controller="Account" asp-action="Login" class="btn btn-sm btn-outline-primary">Log in to enrol</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

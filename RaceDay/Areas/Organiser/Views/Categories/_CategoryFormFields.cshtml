@@ -1,0 +1,29 @@
+﻿@model CategoryFormViewModel
+
+@* Both ids travel as hidden fields: the controller needs them when the form posts back. *@
+<input type="hidden" asp-for="CategoryId" />
+<input type="hidden" asp-for="EventId" />
+
+<div class="mb-3">
+    <label asp-for="CategoryName" class="form-label"></label>
+    <input asp-for="CategoryName" class="form-control" />
+    <span asp-validation-for="CategoryName" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Distance" class="form-label"></label>
+    <input asp-for="Distance" class="form-control" />
+    <span asp-validation-for="Distance" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="EntryFee" class="form-label"></label>
+    <input asp-for="EntryFee" class="form-control" />
+    <span asp-validation-for="EntryFee" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="MaxParticipants" class="form-label"></label>
+    <input asp-for="MaxParticipants" class="form-control" />
+    <span asp-validation-for="MaxParticipants" class="text-danger"></span>
+</div>

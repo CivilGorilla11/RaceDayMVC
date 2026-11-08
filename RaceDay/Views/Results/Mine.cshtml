@@ -1,0 +1,49 @@
+﻿@model List<ResultViewModel>
+@{
+    ViewData["Title"] = "My results";
+}
+
+<h1 class="mb-3">My results</h1>
+
+@if (!Model.Any())
+{
+    <p>You do not have any recorded results yet. Results appear here after an organiser captures them.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Finish time</th>
+                    <th>Position</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        @* Falls back to the "Race" text when the API does not send the event name yet. *@
+                        <td>@(r.EventName ?? r.Race)</td>
+                        <td>@(r.EventDate.HasValue? r.EventDate.Value.ToString("dd MMM yyyy") : "-")</td>
+                        <td>@(r.CategoryName ?? "-")</td>
+                        <td>@r.FinishTime.ToString("c")</td>
+                        <td>
+                            @if (r.TotalFinishers.HasValue)
+                            {
+                                <span>@r.Position.ToOrdinal() out of @r.TotalFinishers</span>   @* "47th out of 312" *@
+                            }
+                            else
+                            {
+                                <span>@r.Position.ToOrdinal()</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

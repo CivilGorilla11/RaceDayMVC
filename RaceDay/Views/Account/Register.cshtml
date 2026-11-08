@@ -1,0 +1,44 @@
+﻿@model RaceDay.Models.Account.RegisterViewModel
+ 
+@{
+    var accountType = ViewData["AccountType"] as string ?? "Participant";
+    var formAction = ViewData["FormAction"] as string ?? "Register";
+    ViewData["Title"] = "Register";
+}
+
+<h1 class="mb-3">Create a @accountType account</h1>
+
+<form asp-action="@formAction" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label"></label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ConfirmPassword" class="form-label"></label>
+        <input asp-for="ConfirmPassword" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create account</button>
+    <a asp-action="Login" class="btn btn-secondary">Back to log in</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

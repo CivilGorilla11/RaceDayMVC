@@ -1,0 +1,56 @@
+﻿
+@model List<CategoryViewModel>
+@{
+    ViewData["Title"] = "Categories";
+}
+<partial name="_EventTabs" />
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-0">Categories</h1>
+        <p class="text-muted mb-0">@ViewBag.EventName</p>
+    </div>
+    <div>
+        <a asp-controller="Events" asp-action="Index" class="btn btn-secondary">Back to events</a>
+        <a asp-action="Create" asp-route-eventId="@ViewBag.EventId" class="btn btn-primary">Add category</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <p>This event has no categories yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th class="text-end">Distance</th>
+                    <th class="text-end">Entry fee</th>
+                    <th class="text-end">Max participants</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.CategoryName</td>
+                        <td class="text-end">@c.Distance.ToString("0.##") km</td>
+                        <td class="text-end">R @c.EntryFee.ToString("N2")</td>
+                        <td class="text-end">@c.MaxParticipants</td>
+                        <td class="text-end text-nowrap">
+                            <a asp-action="Edit" asp-route-eventId="@ViewBag.EventId" asp-route-id="@c.CategoryId" class="btn btn-sm btn-outline-primary">Edit</a>
+
+                            <form asp-action="Delete" asp-route-id="@c.CategoryId" asp-route-eventId="@ViewBag.EventId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Remove this category?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
