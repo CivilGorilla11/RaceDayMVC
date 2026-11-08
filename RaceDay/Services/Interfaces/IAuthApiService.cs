@@ -6,7 +6,7 @@ namespace RaceDay.Services.Interfaces
     public interface IAuthApiService
     {
         // POST /api/auth/login, returns the JWT and the role ("Participant" or "Organiser")
-        Task<ApiResult<LoginResponse>> LoginAsync(LoginViewModel model);
+        Task<ApiResult<LoginResponse>> LoginAsync(LoginViewModel model); 
 
         // Both register methods return a simple true/false. After registering, 
         // the user is sent to the login page instead of being logged in automatically.
