@@ -1,0 +1,58 @@
+name: Docker Compose Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Show what is in the repository
+        run: |
+          echo "Branch: $GITHUB_REF_NAME"
+          echo "Docker related files committed on this branch:"
+          git ls-files | grep -i "docker" || echo "(none found)"
+
+      - name: Build and start with Docker Compose
+        run: docker compose up -d --build
+        env:
+          API_BASE_URL: http://localhost:9999/
+
+      - name: List the running containers
+        run: docker compose ps
+
+      - name: Check the app answers
+        run: |
+          STATUS="000"
+          for i in $(seq 1 30); do
+            STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://localhost:8080/ || true)
+            if [ "$STATUS" != "000" ]; then
+              break
+            fi
+            sleep 2
+          done
+
+          echo "Home page returned HTTP $STATUS"
+          echo "### Docker Compose result" >> "$GITHUB_STEP_SUMMARY"
+          echo "Home page returned HTTP $STATUS" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "The container is running and serving the app"
+          else
+            echo "The app did not return a healthy response"
+            exit 1
+          fi
+
+      - name: Show logs if something failed
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop everything
+        if: always()
+        run: docker compose down
