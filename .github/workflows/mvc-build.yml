@@ -1,1 +1,56 @@
+name: MVC Build
 
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Several versions installed so the build works whichever one your project targets
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Find what to build
+        run: |
+          SOLUTION=$(find . -maxdepth 3 -name "*.sln" | head -n 1)
+          WEB_PROJECT=$(grep -rl "Microsoft.NET.Sdk.Web" --include="*.csproj" . | grep -vi "test" | head -n 1 || true)
+
+          if [ -n "$SOLUTION" ]; then
+            TARGET="$SOLUTION"
+          else
+            TARGET="$WEB_PROJECT"
+          fi
+
+          if [ -z "$TARGET" ]; then
+            echo "No .sln or web .csproj found. Is the project committed?"
+            exit 1
+          fi
+
+          echo "Building: $TARGET"
+          echo "TARGET=$TARGET" >> "$GITHUB_ENV"
+
+      - name: Restore packages
+        run: dotnet restore "$TARGET"
+
+      - name: Build
+        run: dotnet build "$TARGET" --configuration Release --no-restore
+
+      - name: Run tests
+        run: |
+          if grep -rqs "Microsoft.NET.Test.Sdk" --include="*.csproj" .; then
+            dotnet test "$TARGET" --configuration Release --no-build --verbosity normal
+          else
+            echo "No test projects found, skipping tests"
+          fi
