@@ -1,0 +1,12 @@
+﻿@model string
+@{
+    // Picks the colour from the status text: green for Confirmed, amber for Pending.
+    var css = Model?.ToLower() switch
+    {
+        "confirmed" => "bg-success",
+        "pending" => "bg-warning text-dark",
+        "cancelled" => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+<span class="badge @css">@Model</span>

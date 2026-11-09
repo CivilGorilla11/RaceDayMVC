@@ -1,0 +1,46 @@
+﻿@model EventFormViewModel
+
+@* Shared by Create and Edit, so the fields are written once. *@
+<input type="hidden" asp-for="EventId" />
+<input type="hidden" asp-for="BannerImage" />
+
+<div class="mb-3">
+    <label asp-for="EventName" class="form-label"></label>
+    <input asp-for="EventName" class="form-control" />
+    <span asp-validation-for="EventName" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="EventDate" class="form-label"></label>
+    <input asp-for="EventDate" class="form-control" />
+    <span asp-validation-for="EventDate" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Address" class="form-label"></label>
+    <input asp-for="Address" class="form-control" />
+    <span asp-validation-for="Address" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Description" class="form-label"></label>
+    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.BannerUrl))
+{
+    <div class="mb-3">
+        <span class="form-label d-block">Current banner</span>
+        <img src="@Model.BannerUrl" alt="Current event banner" class="img-fluid rounded" style="max-height:160px;" />
+    </div>
+}
+
+<div class="mb-3">
+    <label asp-for="BannerImage" class="form-label"></label>
+    <input asp-for="BannerImage" type="file" accept="image/jpeg,image/png,image/webp" class="form-control" />
+    <div class="form-text">Optional. JPEG, PNG or WebP, up to 5 MB.@(string.IsNullOrEmpty(Model.BannerUrl) ? "" : " Choosing a new image replaces the current one.")</div>
+    <span asp-validation-for="BannerImage" class="text-danger"></span>
+</div>
+    
+@* LATER (banner upload): add a file input for BannerImage here, and enctype="multipart/form-data" on the form. *@

@@ -1,0 +1,86 @@
+﻿@{
+    var session = Context.Session;
+
+    // Returns "active" when the current page belongs to one of the given controllers in the given area.
+    // This is what highlights the link of the page you are on.
+    string Active(string area, params string[] controllers)
+    {
+        var currentArea = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+        var sameArea = string.Equals(area, currentArea, StringComparison.OrdinalIgnoreCase);
+        var sameController = controllers.Any(c => string.Equals(c, currentController, StringComparison.OrdinalIgnoreCase));
+
+        return sameArea && sameController ? "active" : "";
+    }
+}
+
+<ul class="navbar-nav me-auto">
+
+    @if (session.IsOrganiser())
+    {
+        <li class="nav-item">
+            <a class="nav-link @Active("Organiser", "Dashboard")" asp-area="Organiser" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @Active("Organiser", "Events", "Categories", "Enrolments", "Results")" asp-area="Organiser" asp-controller="Events" asp-action="Index">My events</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @Active("", "Home")" asp-area="" asp-controller="Home" asp-action="Index">Browse events</a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link @Active("", "Home", "Events")" asp-area="" asp-controller="Home" asp-action="Index">Events</a>
+        </li>
+
+        @if (session.IsParticipant())
+        {
+            <li class="nav-item">
+                <a class="nav-link @Active("", "Enrolments")" asp-area="" asp-controller="Enrolments" asp-action="Mine">My enrolments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @Active("", "Results")" asp-area="" asp-controller="Results" asp-action="Mine">My results</a>
+            </li>
+        }
+    }
+</ul>
+
+<ul class="navbar-nav">
+    @if (session.IsLoggedIn())
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                @session.GetUserEmail()
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><span class="dropdown-item-text text-muted small">Signed in as @session.GetRole()</span></li>
+                @if (session.IsParticipant())
+                {
+                    <li><a class="dropdown-item @Active("", "Profile")" asp-area="" asp-controller="Profile" asp-action="Index">My profile</a></li>
+                }
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                    @* Logout is a POST form, so a stray link can never log you out *@
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="dropdown-item">Log out</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link @Active("", "Account")" asp-area="" asp-controller="Account" asp-action="Login">Log in</a>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Register</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Register">As a participant</a></li>
+                <li><a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="RegisterOrganiser">As an organiser</a></li>
+            </ul>
+        </li>
+    }
+</ul>

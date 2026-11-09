@@ -1,0 +1,18 @@
+﻿@model ProfileViewModel
+@{
+    ViewData["Title"] = "My profile";
+}
+
+<h1 class="mb-3">My profile</h1>
+
+@* LATER: show the profile picture here once the API supports uploads *@
+
+<dl class="row">
+    <dt class="col-sm-3">Name</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.Email</dd>
+</dl>
+
+<a asp-action="Edit" class="btn btn-primary">Edit profile</a>

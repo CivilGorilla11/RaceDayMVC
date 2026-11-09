@@ -1,0 +1,23 @@
+﻿@{
+    // The controllers already set ViewBag.EventId, so this partial needs no extra data.
+    var eventId = ViewBag.EventId;
+    var current = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+}
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(current == "Categories" ? "active" : "")" asp-controller="Categories" asp-action="Index" asp-route-eventId="@eventId">Categories</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(current == "Enrolments" ? "active" : "")" asp-controller="Enrolments" asp-action="Index" asp-route-eventId="@eventId">Enrolments</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(current == "Results" ? "active" : "")" asp-controller="Results" asp-action="Index" asp-route-eventId="@eventId">Results</a>
+    </li>
+    <li class="nav-item ms-auto">
+        <a class="nav-link" asp-controller="Events" asp-action="Edit" asp-route-id="@eventId">Edit event</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Events" asp-action="Index">All events</a>
+    </li>
+</ul>

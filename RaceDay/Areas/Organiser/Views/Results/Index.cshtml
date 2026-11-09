@@ -1,0 +1,71 @@
+﻿@model List<EnrolmentViewModel>
+@{
+    ViewData["Title"] = "Results";
+
+    // The controller sends the captured results in ViewBag, keyed by enrolment id.
+    // If it is missing (the API failed), fall back to an empty lookup instead of crashing.
+    var results = ViewBag.ResultsByEnrolment as Dictionary<int, ResultViewModel> ?? new Dictionary<int, ResultViewModel>();
+}
+<partial name="_EventTabs" />
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-0">Results</h1>
+        <p class="text-muted mb-0">@ViewBag.EventName</p>
+    </div>
+    <a asp-controller="Events" asp-action="Index" class="btn btn-secondary">Back to events</a>
+</div>
+
+@if (!Model.Any())
+{
+    <p>There are no enrolments to capture results for yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Enrolment</th>
+                    <th>Participant</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Finish time</th>
+                    <th>Position</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var e in Model)
+                {
+                    var hasResult = results.TryGetValue(e.EnrolmentId, out var r);
+                    <tr>
+                        <td>#@e.EnrolmentId</td>
+                        <td>@e.ParticipantId</td>
+                        <td>@e.CategoryId</td>
+                        <td><partial name="_StatusBadge" model="e.Status" /></td>
+                        @if (hasResult && r != null)
+                        {
+                            <td>@r.FinishTime.ToString("c")</td>
+                            <td>@r.Position</td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-eventId="@ViewBag.EventId" asp-route-id="@r.ResultId" class="btn btn-sm btn-outline-primary">Edit</a>
+
+                                <form asp-action="Delete" asp-route-id="@r.ResultId" asp-route-eventId="@ViewBag.EventId" method="post" class="d-inline"
+                                      onsubmit="return confirm('Remove this result?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        }
+                        else
+                        {
+                            <td colspan="2" class="text-muted">Not captured yet</td>
+                            <td class="text-end">
+                                <a asp-action="Create" asp-route-eventId="@ViewBag.EventId" asp-route-enrolmentId="@e.EnrolmentId" class="btn btn-sm btn-primary">Add result</a>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
