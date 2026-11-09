@@ -44,27 +44,24 @@ jobs:
 
       - name: Check the app answers
         run: |
+          # Give the container 5-10 seconds to fully initialize
+           sleep 5
+    
           PORT=$(docker port raceday | head -n 1 | sed 's/.*://')
           echo "App is published on port $PORT"
-
-          for i in $(seq 1 30); do
-            STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" "http://localhost:${PORT}/" || true)
-            if [ "$STATUS" != "000" ]; then
-              break
-            fi
-            sleep 2
-          done
-
-          echo "Home page returned HTTP $STATUS"
-          echo "### Docker run result" >> "$GITHUB_STEP_SUMMARY"
-          echo "Home page returned HTTP $STATUS on port $PORT" >> "$GITHUB_STEP_SUMMARY"
-
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
-            echo "The container is running and serving the app"
-          else
-            echo "The app did not return a healthy response"
-            exit 1
+    
+          # Optional: add a curl retry loop
+          for i in {1..5}; do
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT)
+          if [ "$response" -eq 200 ]; then
+          echo "App returned HTTP 200 successfully!"
+          exit 0
           fi
+          echo "Waiting for app to respond... (Attempt $i)"
+          sleep 3
+          done
+    
+          exit 1
 
       - name: Show container logs if something failed
         if: failure()
