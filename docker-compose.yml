@@ -1,11 +1,35 @@
-version: '3.8'
+name: Docker Build
 
-services:
-  raceday:
-    build: .
-    container_name: raceday-app
-    ports:
-      - "8080:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    restart: unless-stopped
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t raceday-web:ci .
+        # Dockerfile in a subfolder? Use: docker build -f MyFolder/Dockerfile -t raceday-web:ci MyFolder
+
+      - name: Start the container
+        run: docker run -d --name raceday -p 8080:8080 -e ApiSettings__BaseUrl=http://localhost:9999/ raceday-web:ci
+
+      - name: Check the app answers
+        run: |
+          for i in $(seq 1 20); do
+            if curl --fail --silent --output /dev/null http://localhost:8080/; then
+              echo "App is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs raceday
+          exit 1
