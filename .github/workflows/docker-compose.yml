@@ -38,34 +38,34 @@ jobs:
           docker run -d --name raceday -P \
             -e ApiSettings__BaseUrl=http://localhost:9999/ \
             raceday-web:ci
-          sleep 3
+          sleep 5
           docker ps
           docker port raceday
 
       - name: Check the app answers
         run: |
-          # Give the container 5 seconds to boot
-          sleep 5
-          
-          # Get the running container ID
-          CONTAINER_ID=$(docker ps -q --filter name=raceday)
-          
-          if [ -z "$CONTAINER_ID" ]; then
-            echo "Error: Container is not running!"
+          PORT=$(docker port raceday | head -n 1 | sed 's/.*://')
+          echo "App is published on port $PORT"
+
+          for i in $(seq 1 30); do
+            STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" "http://localhost:${PORT}/" || true)
+            if [ "$STATUS" != "000" ]; then
+              break
+            fi
+            sleep 2
+          done
+
+          echo "Home page returned HTTP $STATUS"
+          echo "### Docker run result" >> "$GITHUB_STEP_SUMMARY"
+          echo "Home page returned HTTP $STATUS on port $PORT" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "The container is running and serving the app"
+          else
+            echo "The app did not return a healthy response"
             exit 1
-          }
-          
-          echo "Container is running. Inspecting response..."
-          
-          # Check internal response via curl inside the container network
-          docker exec $CONTAINER_ID curl -I http://localhost/ || echo "Internal curl fallback"
-          
-          # Alternatively, ensure container logs look healthy
-          docker logs $CONTAINER_ID
-          
-          echo "App health check passed!"
-          exit 0
-      
-            - name: Show container logs if something failed
-              if: failure()
-              run: docker logs raceday || true
+          fi
+
+      - name: Show container logs if something failed
+        if: failure()
+        run: docker logs raceday || true
