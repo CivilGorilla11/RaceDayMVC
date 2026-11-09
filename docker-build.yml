@@ -1,4 +1,4 @@
-name: Docker Build
+name: Docker Build and Navigate
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+
+env:
+  APP_PORT: 8080
 
 jobs:
   docker:
@@ -15,21 +18,104 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build the image
+      - name: Build the Docker image
         run: docker build -t raceday-web:ci .
         # Dockerfile in a subfolder? Use: docker build -f MyFolder/Dockerfile -t raceday-web:ci MyFolder
 
-      - name: Start the container
-        run: docker run -d --name raceday -p 8080:8080 -e ApiSettings__BaseUrl=http://localhost:9999/ raceday-web:ci
-
-      - name: Check the app answers
+      - name: Start a fake API for the app to talk to
         run: |
-          for i in $(seq 1 20); do
-            if curl --fail --silent --output /dev/null http://localhost:8080/; then
+          python3 .github/mock-api/mock_api.py > mock-api.log 2>&1 &
+          sleep 2
+          curl --fail --silent http://localhost:9999/api/Event
+
+      - name: Start the container
+        run: |
+          docker run -d --name raceday \
+            --add-host=host.docker.internal:host-gateway \
+            -p ${APP_PORT}:8080 \
+            -e ApiSettings__BaseUrl=http://host.docker.internal:9999/ \
+            raceday-web:ci
+
+      - name: Wait for the app to answer
+        run: |
+          for i in $(seq 1 30); do
+            if curl --silent --output /dev/null http://localhost:${APP_PORT}/; then
               echo "App is up"
               exit 0
             fi
             sleep 2
           done
-          docker logs raceday
+          echo "App did not start"
           exit 1
+
+      - name: Navigate the app
+        run: |
+          echo "### Pages visited" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Page | Expected | Got | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+
+          FAILED=0
+
+          check() {
+            expected="$1"; path="$2"
+            got=$(curl --silent --output /dev/null --write-out "%{http_code}" "http://localhost:${APP_PORT}${path}")
+            if [ "$got" = "$expected" ]; then result="pass"; else result="FAIL"; FAILED=1; fi
+            echo "$result  expected $expected, got $got  $path"
+            echo "| \`$path\` | $expected | $got | $result |" >> "$GITHUB_STEP_SUMMARY"
+          }
+
+          # Public pages should load
+          check 200 /
+          check 200 /Events/Details/1
+          check 200 /Account/Login
+          check 200 /Account/Register
+          check 200 /Account/RegisterOrganiser
+          check 200 /Home/Privacy
+
+          # Protected pages should send a guest to the login page
+          check 302 /Organiser/Dashboard
+          check 302 /Organiser/Events
+          check 302 /Enrolments/Mine
+          check 302 /Profile
+
+          # Something that does not exist
+          check 404 /no-such-page
+
+          # The home page should show data that came from the (fake) API
+          if curl --silent http://localhost:${APP_PORT}/ | grep -q "CI Demo Marathon"; then
+            echo "pass  home page shows the event from the API"
+          else
+            echo "FAIL  home page does not show the event from the API"
+            FAILED=1
+          fi
+
+          exit $FAILED
+
+      - name: Set up Node for screenshots
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+        continue-on-error: true
+
+      - name: Take screenshots as a user would see them
+        continue-on-error: true
+        run: |
+          mkdir -p screenshots
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node .github/scripts/screenshots.mjs
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
+
+      - name: Show container logs if something failed
+        if: failure()
+        run: |
+          docker logs raceday
+          cat mock-api.log
+      
